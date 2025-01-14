@@ -23,7 +23,7 @@ func CreateExam(c *gin.Context) {
 		return
 	}
 
-	// Retrieve the packet to get duration_exam
+	// Ambil paket untuk mendapatkan durasi_ujian
 	var packet models.Packet
 	if err := config.DB.First(&packet, input.PacketID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Packet not found"})
@@ -32,12 +32,12 @@ func CreateExam(c *gin.Context) {
 
 	// Ambil durasi dari packet
 	durationSeconds, err := strconv.Atoi(packet.DurationExam)
-	if err != nil || durationSeconds <= 0 {
+	if err != nil || durationSeconds <= 0 { // Jika ada error atau durasi ujian kurang dari atau sama dengan nol
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid duration format in packet", "details": err.Error()})
 		return
 	}
 
-	// Set started_at to the current time and calculate ended_at
+	// Mengatur start_at ke waktu saat ini dan hitung end_at
 	startedAt := time.Now().In(time.Local)
 	endedAt := startedAt.Add(time.Duration(durationSeconds) * time.Second)
 
@@ -55,7 +55,7 @@ func CreateExam(c *gin.Context) {
 		CreatedAt: time.Now(),
 	}
 
-	// Save the exam to the database
+	// Menyimpan exam ke database
 	if err := config.DB.Create(&exam).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create exam"})
 		return
@@ -99,7 +99,7 @@ func GetRemainingTime(c *gin.Context) {
 	}
 
 	remainingTime := time.Until(exam.EndedAt)
-	if remainingTime < 0 {
+	if remainingTime < 0 { // Jika remainingTime kurang dari nol
 		c.JSON(http.StatusOK, gin.H{"remaining_time": "0s"})
 		return
 	}
@@ -107,7 +107,7 @@ func GetRemainingTime(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"remaining_time": remainingTime.String()})
 }
 
-// Get all exams
+// Mendapatkan semua Exam
 func GetExams(c *gin.Context) {
 	var exams []models.Exam
 	if err := config.DB.Find(&exams).Error; err != nil {
